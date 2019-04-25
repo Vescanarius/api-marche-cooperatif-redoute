@@ -1,0 +1,17 @@
+{
+    "rootAPI": "/api/v1/",
+    "port": 8080,
+    "db": {
+        "host": "localhost",
+        "user": "root",
+        "password": "",
+        "database": "gt18841_marchecoop"
+    },
+    "errors": {
+        "wrongID":"wrong id",
+        "wrongmaxValue":"wrong max value",
+        "nameAlreadyTaken":"name already taken",
+        "noNameValue":"no name value", 
+        "sameName":"same name"
+    }
+}
