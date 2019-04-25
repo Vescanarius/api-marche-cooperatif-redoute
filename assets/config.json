@@ -5,7 +5,7 @@
         "host": "localhost",
         "user": "root",
         "password": "",
-        "database": "gt18841_marchecoop"
+        "database": ""
     },
     "errors": {
         "wrongID":"wrong id",
