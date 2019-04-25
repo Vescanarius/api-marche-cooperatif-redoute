@@ -1,0 +1,96 @@
+{
+    "info": {
+      "title": "API REST marché de Redoute Documentation",
+      "version": "1.0.0",
+      "license": {
+        "name": "ISC"
+      },
+      "description": "API REST pour géner les utilisateurs et le planning"
+    },
+    "basePath":"/api/v1/",
+    "host":"localhost:8080",
+    "tags":[{
+      "name":"members",
+      "description":"Méthodes permettant de gèrer les membres du marché"
+    }],
+    "paths": {
+      "members/{id}": {
+        "get": {
+          "tags":["members"],
+          "summary": "members/{id}",
+          "consumes": [
+            "application/json"
+          ],
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true
+            }
+          ]
+        },
+        "put": {
+          "tags":["members"],
+          "summary": "members/{id}",
+          "consumes": [
+            "application/json"
+          ],
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true
+            }
+          ]
+        },
+        "delete": {
+          "tags":["members"],
+          "summary": "members/{id}",
+          "consumes": [
+            "application/json"
+          ],
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true
+            }
+          ]
+        }
+      },
+      "members": {
+        "tags":["members"],
+        "get": {
+          "tags":["members"],
+          "summary": "Affiche une liste de membres selon le max",
+          "consumes": [
+            "application/json"
+          ],
+          "parameters": [
+            {
+              "name": "max",
+              "in": "query",
+              "required": false
+            }
+            
+          ]
+        },
+        "post": {
+          "tags":["members"],
+          "summary": "Ajout d'un membre",
+          "consumes": [
+            "application/json"
+          ],
+          "parameters": [
+            {
+              "name": "name",
+              "in": "body",
+              "required": true
+            }
+            
+          ]
+        }
+      }
+    },
+    "swagger": "2.0"
+  }
