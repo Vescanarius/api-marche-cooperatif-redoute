@@ -1,8 +1,8 @@
 # Récupération
 
-{% api-method method="get" host="https://localhost:8080/api" path="/v1/cakes/:id" %}
+{% api-method method="get" host="https://localhost:8080/api" path="/v1/member/:id" %}
 {% api-method-summary %}
-Get members
+Get Récupération d'un membre
 {% endapi-method-summary %}
 
 {% api-method-description %}
@@ -13,25 +13,9 @@ Récupération d'un membre
 {% api-method-request %}
 {% api-method-path-parameters %}
 {% api-method-parameter name="id" type="string" %}
-ID of the cake to get, for free of course.
+L'ID du membre à récupérer
 {% endapi-method-parameter %}
 {% endapi-method-path-parameters %}
-
-{% api-method-headers %}
-{% api-method-parameter name="Authentication" type="string" required=true %}
-Authentication token to track down who is emptying our stocks.
-{% endapi-method-parameter %}
-{% endapi-method-headers %}
-
-{% api-method-query-parameters %}
-{% api-method-parameter name="recipe" type="string" %}
-The API will do its best to find a cake matching the provided recipe.
-{% endapi-method-parameter %}
-
-{% api-method-parameter name="gluten" type="boolean" %}
-Whether the cake should be gluten-free or not.
-{% endapi-method-parameter %}
-{% endapi-method-query-parameters %}
 {% endapi-method-request %}
 
 {% api-method-response %}
@@ -42,10 +26,15 @@ Cake successfully retrieved.
 
 ```javascript
 {
-    "name": "Cake's name",
-    "recipe": "Cake's recipe name",
-    "cake": "Binary cake"
+    "status": "success",
+    "result": [
+        {
+            "id": 1,
+            "name": "John"
+        },
+        ]
 }
+    
 ```
 {% endapi-method-response-example %}
 
@@ -56,7 +45,8 @@ Could not find a cake matching this query.
 
 ```javascript
 {
-    "message": "Ain't no cake like that."
+    "status": "error",
+    "message": "wrong id"
 }
 ```
 {% endapi-method-response-example %}
