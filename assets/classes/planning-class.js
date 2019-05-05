@@ -21,8 +21,61 @@ let Planning = class {
         })
     }
 
+    static getNextXWeeks(nbSemaine) {
+        return new Promise((next) => {
+            if ((nbSemaine || nbSemaine != 0) && nbSemaine < 10) {
 
-    static getTwoMonths() {
+                let futurServices
+                var semaineTableau = new Array()
+
+                for (let semaine = 1; semaine <= nbSemaine; semaine++) {
+                    let nextMercredi = new Date()
+                    let futurDate = new Date()
+                    futurDate.setDate(nextMercredi.getDate() + (7 * semaine));
+
+                    //console.log(futurDate)
+                    semaineTableau.push(
+                        {
+                            "semaine": semaine,
+                            "date": futurDate
+                        }
+                    )
+                }
+
+                let queriesSemaines = semaineTableau.map((semaine) => {
+                    return new Promise((next) => {
+                        this.getNextWeek(futurServices)
+                            .then((result) => {
+                                console.log(semaine)
+                                result = {
+                                    "mercredi": semaine,
+                                    "appel": result
+                                }
+
+                                next(result)
+                                //console.log(result)
+                            })
+                            .catch((err) => next(err))
+                    })
+
+                })
+                Promise.all(queriesSemaines)
+                    .then((results) => {
+                        //console.log(results)
+                        next(results)
+                    })
+                    .catch((err) => next(err))
+
+
+            } else {
+                next(new Error(config.errors.noWeekValue))
+            }
+
+        })
+    }
+
+
+    static getNextWeek(futurServices) {
 
         return new Promise((next) => {
 
@@ -81,7 +134,7 @@ let Planning = class {
                                             // On prends que les deux notes les plus basses
                                             let max = equipe.nbPlanning
 
-                                            results = results.slice(0,max)
+                                            results = results.slice(0, max)
                                             // Rangement dans un tableau
                                             results = {
                                                 "equipe": equipe.nomComplet,

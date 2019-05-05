@@ -22,7 +22,6 @@ mysql.createConnection({
 
         const app = express();
 
-
         console.log('connected as id ' + db.threadId);
 
         db.query('SELECT * FROM members', (err, result) => {
@@ -83,10 +82,18 @@ mysql.createConnection({
 
                 PlanningRouter.route('/')
 
+                    // récupère le planning de la semaine suivante
+                    .get(async (req, res) => {
+
+                        let planning = await Planning.getNextWeek(null)
+                        res.json(checkAndChange(planning))
+
+                    })
+                PlanningRouter.route('/:nbSemaine')
                     // récupère le planning des deux prochains mois
                     .get(async (req, res) => {
 
-                        let planning = await Planning.getTwoMonths()
+                        let planning = await Planning.getNextXWeeks(req.params.nbSemaine)
                         res.json(checkAndChange(planning))
 
                     })
