@@ -4,7 +4,7 @@ const { success, error, checkAndChange } = require('./assets/functions');
 const mysql = require('promise-mysql');
 const bodyParser = require('body-parser');
 const morgan = require('morgan')('dev');
-const config = require('./assets/config')
+const config = require('./assets/config_dev')
 const express = require('express');
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./assets/swagger.json');
@@ -31,11 +31,13 @@ mysql.createConnection({
             } else {
 
                 let MembersRouter = express.Router()
+                let PlanningRouter = express.Router()
                 let Members = require('./assets/classes/members-class')(db, config)
+                let Planning = require('./assets/classes/planning-class')(db, config)
 
                 app.use(bodyParser.json()); // for parsing application/json
                 app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
-                app.use(config.rootAPI+'api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+                app.use(config.rootAPI + 'api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
                 MembersRouter.route('/:id')
 
@@ -79,7 +81,20 @@ mysql.createConnection({
 
                     })
 
+                PlanningRouter.route('/')
+
+                    // récupère le planning des deux prochains mois
+                    .get(async (req, res) => {
+
+                        let planning = await Planning.getTwoMonths()
+                        res.json(checkAndChange(planning))
+
+                    })
+
+
+
                 app.use(config.rootAPI + 'members', MembersRouter)
+                app.use(config.rootAPI + 'planning', PlanningRouter)
 
                 app.listen(config.port, () => console.log('started on port ' + config.port));
             }
