@@ -1,5 +1,5 @@
 require('babel-register');
-const { success, error, checkAndChange } = require('./assets/functions');
+const { checkAndChange } = require('./assets/functions');
 
 const mysql = require('promise-mysql');
 const bodyParser = require('body-parser');
