@@ -1,5 +1,6 @@
 let db, config
-const { sortArray } = require('../functions');
+const { sortArray, nextMercredi } = require('../functions');
+let Service = require('./service-class')(db, config)
 
 
 
@@ -25,13 +26,12 @@ let Planning = class {
         return new Promise((next) => {
             if ((nbSemaine || nbSemaine != 0) && nbSemaine < 10) {
 
-                let futurServices
                 var semaineTableau = new Array()
-
+                let nextmercredi = nextMercredi(new Date, 3)
+                var futurDate = new Date()
                 for (let semaine = 1; semaine <= nbSemaine; semaine++) {
-                    let nextMercredi = new Date()
-                    let futurDate = new Date()
-                    futurDate.setDate(nextMercredi.getDate() + (7 * semaine));
+
+                    futurDate.setDate(nextmercredi.getDate() + (7 * semaine));
 
                     //console.log(futurDate)
                     semaineTableau.push(
@@ -44,7 +44,7 @@ let Planning = class {
 
                 let queriesSemaines = semaineTableau.map((semaine) => {
                     return new Promise((next) => {
-                        this.getNextWeek(futurServices)
+                        this.getNextWeek(futurDate)
                             .then((result) => {
                                 console.log(semaine)
                                 result = {
@@ -75,7 +75,7 @@ let Planning = class {
     }
 
 
-    static getNextWeek(futurServices) {
+    static getNextWeek(futurDate) {
 
         return new Promise((next) => {
 
@@ -108,10 +108,8 @@ let Planning = class {
 
                                                     // on crée la note pour chaque consomacteur
                                                     let note = parseInt(nbServices) / parseInt(nbDeMarches)
-
-                                                    //console.log(note)
-
                                                     result = {
+                                                        "idConsomacteur": consomacteur.id,
                                                         "nom": consomacteur.name,
                                                         "prenom": consomacteur.prenom,
                                                         "tel": consomacteur.tel,
@@ -127,6 +125,7 @@ let Planning = class {
 
                                     Promise.all(queries)
                                         .then(results => {
+                                            // console.log(results)
 
                                             // On trie les résultats en fonction de la note
                                             results.sort(sortArray("note"));
@@ -135,14 +134,29 @@ let Planning = class {
                                             let max = equipe.nbPlanning
 
                                             results = results.slice(0, max)
-                                            // Rangement dans un tableau
-                                            results = {
-                                                "equipe": equipe.nomComplet,
-                                                "equipeAbrege": equipe.abrege,
-                                                "membres": results
-                                            }
 
-                                            next(results)
+                                            if (!futurDate) {
+                                                futurDate = nextMercredi(new Date(), 3)
+                                            }
+                                            Service.removeAllPlanning()
+                                                .then((success) => {
+
+                                                    Service.add(results[0].idConsomacteur, futurDate, "planning", "pending")
+                                                        .then(() => {
+                                                            // Rangement dans un tableau
+                                                            results = {
+                                                                "equipe": equipe.nomComplet,
+                                                                "equipeAbrege": equipe.abrege,
+                                                                "date": futurDate,
+                                                                "membres": results
+                                                            }
+                                                            next(results)
+                                                        })
+                                                        .catch((err) => next(err))
+
+                                                })
+                                                .catch((err) => next(err))
+
                                         })
                                 })
                                 .catch((err) => next(err))
