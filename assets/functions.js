@@ -4,7 +4,10 @@ exports.success = function (result) {
         result: result
     }
 }
-
+exports.nextMercredi = function (d, dow) {
+    d.setDate(d.getDate() + (dow + (7 - d.getDay())) % 7);
+    return d;
+}
 
 exports.error = function (message) {
     return {
