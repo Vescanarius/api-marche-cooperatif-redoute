@@ -16,7 +16,7 @@ let Service = class {
                 db.query("SELECT equipe FROM members WHERE id=?", [member])
                     .then((result) => {
                         let equipe = result[0].equipe
-                        console.log(equipe)
+                        //console.log(equipe)
                         db.query(
                             "INSERT INTO `services` (`id`, `member`, `date`, `equipe`, `status`, `source`) VALUES ( ? , ? , ? , ?, ?, ?)",
                             [null, member, date, equipe, status, source]

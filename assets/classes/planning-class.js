@@ -25,11 +25,9 @@ let Planning = class {
     static getNextXWeeks(nbSemaine) {
         return new Promise((next) => {
             if ((nbSemaine || nbSemaine != 0) && nbSemaine < 10) {
-
                 var semaineTableau = new Array()
                 let nextmercredi = nextMercredi(new Date, 3)
-                
-                
+                                
                 for (let semaine = 1; semaine <= nbSemaine; semaine++) {
                     var futurDate = new Date()
                     futurDate.setDate(nextmercredi.getDate() + (7 * semaine));
@@ -67,18 +65,13 @@ let Planning = class {
                     next(allServices)
                 })
                     .catch((err) => next(err))
-
-
-
             } else {
                 next(new Error(config.errors.noWeekValue))
             }
-
         })
     }
 
     static statsConsomacteur(consomacteur) {
-
         return new Promise((resolve) => {
             db.query("SELECT COUNT(*) as services FROM services WHERE `member`=?", [consomacteur.id])
                 .then((result) => {
@@ -103,19 +96,15 @@ let Planning = class {
                         "email": consomacteur.email,
                         "note": note
                     }
-
                     resolve(result)
                 })
                 .catch((err) => resolve(err))
         })
-
     }
 
 
     static getNextWeek(futurDate) {
-
         return new Promise((next) => {
-
             // Netoyage de toutes les entrées dasn le planning
             Service.removeAllPlanning(futurDate)
                 .then((valid) => {
@@ -137,12 +126,12 @@ let Planning = class {
                                                                 listeConsomacteur.push(result)
                                                                 resolve(result)
                                                             })
+                                                            .catch((err) => resolve(err));
                                                     })).catch((err) => resolve(err));
                                                 }, Promise.resolve());
 
                                                 // Après tous les ajouts
                                                 requests.then(() => {
-
                                                     // On trie les résultats en fonction de la note
                                                     listeConsomacteur.sort(sortArray("note"));
 
@@ -190,11 +179,10 @@ let Planning = class {
                     })
                 })
                 .then((results) => {
-                    console.log("fin")
+                    //console.log("fin")
                     next(results)
                 })
                 .catch((err) => next(err))
-
         })
     }
 }
