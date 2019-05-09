@@ -28,12 +28,13 @@ let Planning = class {
 
                 var semaineTableau = new Array()
                 let nextmercredi = nextMercredi(new Date, 3)
-                var futurDate = new Date()
+                
+                
                 for (let semaine = 1; semaine <= nbSemaine; semaine++) {
-
+                    var futurDate = new Date()
                     futurDate.setDate(nextmercredi.getDate() + (7 * semaine));
 
-                    //console.log(futurDate)
+                   
                     semaineTableau.push(
                         {
                             "semaine": semaine,
@@ -41,30 +42,32 @@ let Planning = class {
                         }
                     )
                 }
-
-                let queriesSemaines = semaineTableau.map((semaine) => {
-                    return new Promise((next) => {
-                        this.getNextWeek(futurDate)
+                //console.log(semaineTableau)
+                let allServices = new Array
+                let queriesSemaines = semaineTableau.reduce((promiseChain, semaine) => {
+                    return promiseChain.then(() => new Promise((resolve) => {
+                        this.getNextWeek(semaine.date)
                             .then((result) => {
-                                console.log(semaine)
+                                //console.log(semaine)
                                 result = {
                                     "mercredi": semaine,
                                     "appel": result
                                 }
-
-                                next(result)
+                                allServices.push(result)
+                                resolve()
                                 //console.log(result)
                             })
                             .catch((err) => next(err))
-                    })
 
+                    })).catch((err) => resolve(err));
+                }, Promise.resolve());
+
+                // Après toutes les reqêtes
+                queriesSemaines.then((results) => {
+                    next(allServices)
                 })
-                Promise.all(queriesSemaines)
-                    .then((results) => {
-                        //console.log(results)
-                        next(results)
-                    })
                     .catch((err) => next(err))
+
 
 
             } else {
@@ -74,101 +77,124 @@ let Planning = class {
         })
     }
 
+    static statsConsomacteur(consomacteur) {
+
+        return new Promise((resolve) => {
+            db.query("SELECT COUNT(*) as services FROM services WHERE `member`=?", [consomacteur.id])
+                .then((result) => {
+                    let today = new Date
+                    let nbServices = result[0].services
+                    let dateArrivee = new Date(consomacteur.dateAjout)
+
+                    if (dateArrivee == null || dateArrivee == 'Invalid Date') {
+                        dateArrivee = new Date();
+                        dateArrivee.setDate(today.getDate() - 30);
+                    }
+
+                    let nbDeMarches = Math.round((today - dateArrivee) / (7 * 24 * 60 * 60 * 1000))
+
+                    // on crée la note pour chaque consomacteur
+                    let note = parseInt(nbServices) / parseInt(nbDeMarches)
+                    result = {
+                        "idConsomacteur": consomacteur.id,
+                        "nom": consomacteur.name,
+                        "prenom": consomacteur.prenom,
+                        "tel": consomacteur.tel,
+                        "email": consomacteur.email,
+                        "note": note
+                    }
+
+                    resolve(result)
+                })
+                .catch((err) => resolve(err))
+        })
+
+    }
+
 
     static getNextWeek(futurDate) {
 
         return new Promise((next) => {
 
-            let equipes = this.getAllTeams()
-                .then((equipes) => {
-                    // console.log(equipes)
+            // Netoyage de toutes les entrées dasn le planning
+            Service.removeAllPlanning(futurDate)
+                .then((valid) => {
+                    return new Promise((next) => {
+                        this.getAllTeams()
+                            .then((equipes) => {
 
-                    let queries = equipes.map((equipe) => {
-                        //console.log(equipe)
-                        return new Promise((next) => {
-                            db.query('SELECT * FROM members WHERE equipe=? ', [equipe.id])
-                                .then((result) => {
+                                let queries = equipes.map((equipe) => {
+                                    return new Promise((next) => {
+                                        db.query('SELECT * FROM members WHERE equipe=? ', [equipe.id])
+                                            .then((teamMemberArray) => {
 
-                                    let teamArray = result
-                                    let today = new Date
+                                                // On ajoute tous les concomacteurs dans un tableau en fonction de leur note
+                                                let listeConsomacteur = new Array
+                                                let requests = teamMemberArray.reduce((promiseChain, consomacteur) => {
+                                                    return promiseChain.then(() => new Promise((resolve) => {
+                                                        Planning.statsConsomacteur(consomacteur)
+                                                            .then((result) => {
+                                                                listeConsomacteur.push(result)
+                                                                resolve(result)
+                                                            })
+                                                    })).catch((err) => resolve(err));
+                                                }, Promise.resolve());
 
-                                    let queries = teamArray.map((consomacteur) => {
-                                        return new Promise((resolve, reject) => {
-                                            db.query("SELECT COUNT(*) as services FROM services WHERE `member`=?", [consomacteur.id])
-                                                .then((result) => {
-                                                    let nbServices = result[0].services
-                                                    let dateArrivee = new Date(consomacteur.dateAjout)
+                                                // Après tous les ajouts
+                                                requests.then(() => {
 
-                                                    if (dateArrivee == null || dateArrivee == 'Invalid Date') {
-                                                        dateArrivee = new Date();
-                                                        dateArrivee.setDate(today.getDate() - 30);
+                                                    // On trie les résultats en fonction de la note
+                                                    listeConsomacteur.sort(sortArray("note"));
+
+                                                    // On prends que les notes les plus basses
+                                                    let max = equipe.nbPlanning
+                                                    listeConsomacteur = listeConsomacteur.slice(0, max)
+                                                    //console.log(listeConsomacteur)
+
+
+                                                    if (!futurDate) {
+                                                        futurDate = nextMercredi(new Date(), 3)
                                                     }
 
-                                                    let nbDeMarches = Math.round((today - dateArrivee) / (7 * 24 * 60 * 60 * 1000))
+                                                    let queries = listeConsomacteur.map((consomacteur) => {
+                                                        return Service.add(consomacteur.idConsomacteur, futurDate, "planning", "pending")
+                                                            //.then(()=>console.log("Ajout : " + consomacteur.idConsomacteur + futurDate))
+                                                            .catch((err) => next(err))
+                                                    })
+                                                    Promise.all(queries)
+                                                        .then((results) => {
 
-                                                    // on crée la note pour chaque consomacteur
-                                                    let note = parseInt(nbServices) / parseInt(nbDeMarches)
-                                                    result = {
-                                                        "idConsomacteur": consomacteur.id,
-                                                        "nom": consomacteur.name,
-                                                        "prenom": consomacteur.prenom,
-                                                        "tel": consomacteur.tel,
-                                                        "email": consomacteur.email,
-                                                        "note": note
-                                                    }
-
-                                                    resolve(result)
-                                                })
-                                                .catch((err) => next(err))
-                                        })
-                                    })
-
-                                    Promise.all(queries)
-                                        .then(results => {
-                                            // console.log(results)
-
-                                            // On trie les résultats en fonction de la note
-                                            results.sort(sortArray("note"));
-
-                                            // On prends que les deux notes les plus basses
-                                            let max = equipe.nbPlanning
-
-                                            results = results.slice(0, max)
-
-                                            if (!futurDate) {
-                                                futurDate = nextMercredi(new Date(), 3)
-                                            }
-                                            Service.removeAllPlanning()
-                                                .then((success) => {
-
-                                                    Service.add(results[0].idConsomacteur, futurDate, "planning", "pending")
-                                                        .then(() => {
                                                             // Rangement dans un tableau
                                                             results = {
                                                                 "equipe": equipe.nomComplet,
                                                                 "equipeAbrege": equipe.abrege,
                                                                 "date": futurDate,
-                                                                "membres": results
+                                                                "membres": listeConsomacteur
                                                             }
+                                                            //console.log(results)
                                                             next(results)
                                                         })
                                                         .catch((err) => next(err))
-
                                                 })
-                                                .catch((err) => next(err))
-
-                                        })
+                                                    .catch((err) => next(err))
+                                            })
+                                            .catch((err) => next(err))
+                                    })
                                 })
-                                .catch((err) => next(err))
-                        })
+                                Promise.all(queries)
+                                    .then(results => {
+                                        next(results)
+                                    })
+                            })
+                            .catch((err) => next(err))
                     })
-                    Promise.all(queries)
-                        .then(results => {
-                            //console.log(results)
-                            next(results)
-                        })
+                })
+                .then((results) => {
+                    console.log("fin")
+                    next(results)
                 })
                 .catch((err) => next(err))
+
         })
     }
 }
