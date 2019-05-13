@@ -1,10 +1,10 @@
-require('babel-register');
+//require('babel-register');
 const { checkAndChange } = require('./assets/functions');
 
 const mysql = require('promise-mysql');
 const bodyParser = require('body-parser');
 const morgan = require('morgan')('dev');
-const config = require('./assets/config_dev')
+const config = require('./assets/config');
 const express = require('express');
 
 
@@ -32,7 +32,7 @@ mysql.createConnection({
                 let Members = require('./assets/classes/members-class')(db, config)
                 let Planning = require('./assets/classes/planning-class')(db, config)
                 let Service = require('./assets/classes/service-class')(db, config)
-
+                app.use(morgan)
                 app.use(bodyParser.json()); // for parsing application/json
                 app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
 
@@ -103,7 +103,7 @@ mysql.createConnection({
                         res.json(checkAndChange(services))
 
                     })
-                    ServiceRouter.route('/all/:member')
+                ServiceRouter.route('/all/:member')
                     .get(async (req, res) => {
 
                         let services = await Service.getAllServices(req.params.member)
@@ -118,7 +118,7 @@ mysql.createConnection({
                     })
                 ServiceRouter.route('/edit/:id/')
                     .delete(async (req, res) => {
-                        let deleteService = await Service.delete(req.params.id )
+                        let deleteService = await Service.delete(req.params.id)
                         res.json(checkAndChange(deleteService))
                     })
 
