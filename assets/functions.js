@@ -4,7 +4,10 @@ exports.success = function (result) {
         result: result
     }
 }
-
+exports.nextMercredi = function (d, dow) {
+    d.setDate(d.getDate() + (dow + (7 - d.getDay())) % 7);
+    return d;
+}
 
 exports.error = function (message) {
     return {
@@ -13,6 +16,17 @@ exports.error = function (message) {
     }
 }
 
+exports.sortArray = function (property) {
+    var sortOrder = 1;
+    if (property[0] === "-") {
+        sortOrder = -1;
+        property = property.substr(1);
+    }
+    return function (a, b) {
+        var result = (a[property] < b[property]) ? -1 : (a[property] > b[property]) ? 1 : 0;
+        return result * sortOrder;
+    }
+}
 
 exports.isErr = (err) => {
     return err instanceof Error;
