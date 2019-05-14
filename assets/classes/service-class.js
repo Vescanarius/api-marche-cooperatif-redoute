@@ -41,7 +41,7 @@ let Service = class {
     }
     static removeAllPlanning(date) {
         return new Promise((next) => {
-            db.query("DELETE FROM services WHERE `date`=? `source` LIKE 'planning' AND `status` LIKE 'pending'",[date])
+            db.query("DELETE FROM services WHERE `date` LIKE ? AND `source` LIKE 'planning' AND `status` LIKE 'pending'",[date])
                 .then((results) => next(true))
                 .catch((err) => next(err))
         })
