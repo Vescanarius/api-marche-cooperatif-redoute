@@ -24,18 +24,18 @@ let Planning = class {
 
     static getNextXWeeks(nbSemaine) {
         return new Promise((next) => {
-            if ((nbSemaine || nbSemaine != 0) && nbSemaine < 10) {
+            if (nbSemaine && nbSemaine != 0 && nbSemaine < 10) {
                 var semaineTableau = new Array()
-                let nextmercredi = nextMercredi(new Date, 3)
-                                
-                for (let semaine = 1; semaine <= nbSemaine; semaine++) {
-                    var futurDate = new Date()
-                    futurDate.setDate(nextmercredi.getDate() + (7 * semaine));
+                let nextmercredi = nextMercredi(new Date, 2)
 
-                   
+
+                for (let countSemaine = 0; countSemaine < nbSemaine; countSemaine++) {
+                    let futurDate = new Date()
+                    futurDate.setDate(nextmercredi.getDate() + (7 * countSemaine));
+                    //console.log(futurDate)
                     semaineTableau.push(
                         {
-                            "semaine": semaine,
+                            "semaine": countSemaine,
                             "date": futurDate
                         }
                     )
@@ -104,6 +104,10 @@ let Planning = class {
 
 
     static getNextWeek(futurDate) {
+
+        if (!futurDate) {
+            futurDate = nextMercredi(new Date(), 3)
+        }
         return new Promise((next) => {
             // Netoyage de toutes les entrées dasn le planning
             Service.removeAllPlanning(futurDate)
@@ -141,9 +145,7 @@ let Planning = class {
                                                     //console.log(listeConsomacteur)
 
 
-                                                    if (!futurDate) {
-                                                        futurDate = nextMercredi(new Date(), 3)
-                                                    }
+
 
                                                     let queries = listeConsomacteur.map((consomacteur) => {
                                                         return Service.add(consomacteur.idConsomacteur, futurDate, "planning", "pending")
