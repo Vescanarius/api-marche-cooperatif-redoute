@@ -41,8 +41,10 @@ let Service = class {
         return new Promise((next) => {
             //console.log(date)
            
-            let dateFinale = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate()
-            db.query("DELETE FROM services WHERE `date`= ? AND `source` LIKE 'planning' AND `status` LIKE 'pending'", [dateFinale])
+            let dateFinale = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + (date.getDate()+1)
+            //console.log(dateFinale)
+            //console.log("DELETE FROM services WHERE `date`='"+dateFinale+"' AND `source` LIKE 'planning' AND `status` LIKE 'pending'")
+            db.query("DELETE FROM services WHERE `date`='?' AND `source` LIKE 'planning' AND `status` LIKE 'pending'", [dateFinale])
                 .then((results) => {
                     //console.log(results)
                     next(true)
