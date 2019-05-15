@@ -39,12 +39,12 @@ let Service = class {
     }
     static removeAllPlanning(date) {
         return new Promise((next) => {
-            //console.log(date)
-           
-            let dateFinale = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + (date.getDate()+1)
+            //console.log("reçu : " + date)
+
+            let dateFinale = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate()
             //console.log(dateFinale)
-            //console.log("DELETE FROM services WHERE `date`='"+dateFinale+"' AND `source` LIKE 'planning' AND `status` LIKE 'pending'")
-            db.query("DELETE FROM services WHERE `date`='?' AND `source` LIKE 'planning' AND `status` LIKE 'pending'", [dateFinale])
+            //console.log("DELETE FROM services WHERE `date`='" + dateFinale + "' AND `source` LIKE 'planning' AND `status` LIKE 'pending'")
+            db.query("DELETE FROM services WHERE `date`=? AND `source` LIKE 'planning' AND `status` LIKE 'pending'", [dateFinale])
                 .then((results) => {
                     //console.log(results)
                     next(true)

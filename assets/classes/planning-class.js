@@ -26,7 +26,7 @@ let Planning = class {
         return new Promise((next) => {
             if (nbSemaine && nbSemaine != 0 && nbSemaine < 10) {
                 var semaineTableau = new Array()
-                let nextmercredi = nextMercredi(new Date, 2)
+                let nextmercredi = nextMercredi(new Date, 3)
 
 
                 for (let countSemaine = 0; countSemaine < nbSemaine; countSemaine++) {
@@ -108,6 +108,7 @@ let Planning = class {
         if (!futurDate) {
             futurDate = nextMercredi(new Date(), 3)
         }
+        //console.log("test " + futurDate)
         return new Promise((next) => {
             // Netoyage de toutes les entrées dasn le planning
             Service.removeAllPlanning(futurDate)

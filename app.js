@@ -4,7 +4,7 @@ const { checkAndChange } = require('./assets/functions');
 const mysql = require('promise-mysql');
 const bodyParser = require('body-parser');
 const morgan = require('morgan')('dev');
-const config = require('./assets/config_dev');
+const config = require('./assets/config');
 const express = require('express');
 
 
